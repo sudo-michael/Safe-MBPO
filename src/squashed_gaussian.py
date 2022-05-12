@@ -6,8 +6,8 @@ from torch import distributions as pd
 # Borrowed from https://github.com/denisyarats/pytorch_sac
 
 class TanhTransform(pd.transforms.Transform):
-    env_name = pd.constraints.real
-    coenv_name = pd.constraints.interval(-1.0, 1.0)
+    domain = pd.constraints.real
+    codomain = pd.constraints.interval(-1.0, 1.0)
     bijective = True
     sign = +1
 
@@ -37,12 +37,16 @@ class TanhTransform(pd.transforms.Transform):
 
 class SquashedGaussian(pd.transformed_distribution.TransformedDistribution):
     def __init__(self, loc, scale, validate_args=None):
-        base_dist = pd.Normal(loc, scale)
-        super().__init__(base_dist, TanhTransform(), validate_args=validate_args)
+        self.loc = loc
+        self.scale = scale
+
+        self.base_dist = pd.Normal(loc, scale)
+        transforms = [TanhTransform()]
+        super().__init__(self.base_dist, transforms, validate_args=validate_args)
 
     @property
     def mean(self):
-        mu = self.base_dist.loc
-        for transform in self.transforms:
-            mu = transform(mu)
+        mu = self.loc
+        for tr in self.transforms:
+            mu = tr(mu)
         return mu

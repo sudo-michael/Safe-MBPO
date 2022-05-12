@@ -1,10 +1,14 @@
 import pdb
 
 import numpy as np
-from force.env.mujoco.half_cheetah import HalfCheetahEnv
+# from force.env.mujoco.half_cheetah import HalfCheetahEnv
+from .half_cheetah import HalfCheetahEnv
+
 
 
 class CheetahFlipTestEnv(HalfCheetahEnv):
+    def __init__(self):
+        super().__init__()
     def check_termination(self):
         for i in range(self.data.ncon):
             contact = self.data.contact[i]
@@ -19,6 +23,8 @@ class CheetahFlipTestEnv(HalfCheetahEnv):
 _flip_test_env = CheetahFlipTestEnv()
 
 class CheetahNoFlipEnv(HalfCheetahEnv):
+    def __init__(self):
+        super().__init__()
     def step(self, action):
         next_state, reward, _, info = super().step(action)
         _flip_test_env.set_state_from_obs(next_state)
